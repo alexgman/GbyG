@@ -2,10 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.Results;
 
 namespace GbyG.Controllers
 {
@@ -112,7 +109,6 @@ namespace GbyG.Controllers
             new Sample() {SampleId = 97,Barcode = "204617",CreatedAt =DateTime.Parse("09/05/15"),CreatedBy = 5,StatusId = 1},
             new Sample() {SampleId = 98,Barcode = "767548",CreatedAt =DateTime.Parse("02/09/16"),CreatedBy = 7,StatusId = 2},
             new Sample() {SampleId = 99,Barcode = "363492",CreatedAt =DateTime.Parse("12/18/15"),CreatedBy = 6,StatusId = 1}
-
         };
 
         public IList<Status> Statuses = new List<Status>
@@ -122,7 +118,6 @@ namespace GbyG.Controllers
             new Status() {StatusId = 2, StatusType = "In Lab"},
             new Status() {StatusId = 3, StatusType = "Report Generation"},
         };
-
 
         public IList<User> Users = new List<User>
         {
@@ -139,54 +134,61 @@ namespace GbyG.Controllers
         };
 
         // /api/Samples/GetSamplesByStatus?statustype=Received
-        public IEnumerable<Sample> GetSamplesByStatus(string statustype)
+        public IHttpActionResult GetSamplesByStatus(string statustype)
         {
-            return from sample in Samples
-                join status in Statuses
-                    on sample.StatusId equals status.StatusId
-                where status.StatusType == statustype
-                   select sample;
+            var result = from sample in Samples
+                         join status in Statuses
+                             on sample.StatusId equals status.StatusId
+                         where status.StatusType == statustype
+                         select sample;
+
+            return Json(result);
         }
 
         // /api/Samples/GetAllSamplesByStatusUser
-        public IEnumerable<SamplesByStatusUser> GetAllSamplesByStatusUser()
+        public IHttpActionResult GetAllSamplesByStatusUser()
         {
-            return from sample in Samples
-                join status in Statuses
-                    on sample.StatusId equals status.StatusId
-                join user in Users
-                    on sample.CreatedBy equals user.UserId
+            var result
+            = from sample in Samples
+              join status in Statuses
+                      on sample.StatusId equals status.StatusId
+              join user in Users
+                      on sample.CreatedBy equals user.UserId
 
-                select new SamplesByStatusUser()
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Sample = new Sample()
-                    {
-                        Barcode = sample.Barcode,
-                        CreatedAt = sample.CreatedAt,
-                        CreatedBy = sample.CreatedBy,
-                        SampleId = sample.SampleId,
-                        StatusId = sample.StatusId
-                    },
-                    Status = status.StatusType
-                };
+              select new SamplesByStatusUser()
+              {
+                  FirstName = user.FirstName,
+                  LastName = user.LastName,
+                  Sample = new Sample()
+                  {
+                      Barcode = sample.Barcode,
+                      CreatedAt = sample.CreatedAt,
+                      CreatedBy = sample.CreatedBy,
+                      SampleId = sample.SampleId,
+                      StatusId = sample.StatusId
+                  },
+                  Status = status.StatusType
+              };
+
+            return Json(result);
         }
 
         // /api/Samples/GetSamplesByUserMatch
-        public IEnumerable<Sample> GetSamplesByUserMatch(string name)
+        public IHttpActionResult GetSamplesByUserMatch(string name)
         {
-            return from sample in Samples
-                join user in Users
-                    on sample.CreatedBy equals user.UserId
-                where user.LastName.ToUpper().Contains(name.ToUpper()) || user.FirstName.ToUpper().Contains(name.ToUpper())
-                   select new Sample()
-                {
-                    Barcode = sample.Barcode,
-                    CreatedAt = sample.CreatedAt,
-                    CreatedBy = sample.CreatedBy,
-                    SampleId = sample.SampleId
-                };
+            var result = from sample in Samples
+                         join user in Users
+                             on sample.CreatedBy equals user.UserId
+                         where user.LastName.ToUpper().Contains(name.ToUpper()) || user.FirstName.ToUpper().Contains(name.ToUpper())
+                         select new Sample()
+                         {
+                             Barcode = sample.Barcode,
+                             CreatedAt = sample.CreatedAt,
+                             CreatedBy = sample.CreatedBy,
+                             SampleId = sample.SampleId
+                         };
+
+            return Json(result);
         }
 
         // PUT api/Samples
@@ -199,41 +201,14 @@ namespace GbyG.Controllers
 
             Samples.Add(new Sample()
             {
-                Barcode =   inputSample.Barcode,
+                Barcode = inputSample.Barcode,
                 CreatedAt = inputSample.CreatedAt,
                 CreatedBy = inputSample.CreatedBy,
-                SampleId =  inputSample.SampleId,
+                SampleId = inputSample.SampleId,
                 StatusId = inputSample.StatusId
             });
 
             return Ok();
         }
-
-        // GET api/values
-        /*public IEnumerable<string> Get()
-            {
-                return new string[] { "value1", "value2" };
-            }
-
-            // GET api/values/5
-            public string Get(int id)
-            {
-                return "value";
-            }
-
-            // POST api/values
-            public void Post([FromBody]string value)
-            {
-            }
-
-            // PUT api/values/5
-            public void Put(int id, [FromBody]string value)
-            {
-            }
-
-            // DELETE api/values/5
-            public void Delete(int id)
-            {
-            }*/
     }
 }
