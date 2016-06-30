@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace GbyG.Controllers
 {
+    [EnableCors(origins: "http://localhost:45478", headers: "*", methods: "*")]
     public class SamplesController : ApiController
     {
         public IList<Sample> Samples = new List<Sample>
@@ -174,12 +176,13 @@ namespace GbyG.Controllers
         }
 
         // /api/Samples/GetSamplesByUserMatch
-        public IHttpActionResult GetSamplesByUserMatch(string name)
+        public IHttpActionResult GetSamplesByUserMatch(int createdBy)
         {
             var result = from sample in Samples
                          join user in Users
                              on sample.CreatedBy equals user.UserId
-                         where user.LastName.ToUpper().Contains(name.ToUpper()) || user.FirstName.ToUpper().Contains(name.ToUpper())
+                         where user.UserId == createdBy
+                         //where user.LastName.ToUpper().Contains(name.ToUpper()) || user.FirstName.ToUpper().Contains(name.ToUpper())
                          select new Sample()
                          {
                              Barcode = sample.Barcode,
