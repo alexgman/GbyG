@@ -1,5 +1,3 @@
-﻿using Newtonsoft.Json;
-
 namespace GbyG.Models
 {
     public class User
